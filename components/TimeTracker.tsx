@@ -1,22 +1,24 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Alert} from 'react-native';
+import CustomAlert from './CustomAlert';
 
 const Timer: React.FC = () => {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isNotifi, setIsNotifi] = useState(true);
-  const [counter, setCounter] = useState<number>(0);
 
+  const [alertVisible, setAlertVisible] = useState<boolean>(false);
+  const [resState, setRes] = useState<number>(0);
   const createAlert = (res: number) => {
+    setRes(res);
+    setAlertVisible(true);
 
-      Alert.alert('Уведомление', `Прошло ${res}`, [
-        {
-          text: 'ОК',
-          onPress: () => console.log('Уведомление закрыто'),
-        },
-      ]);
- 
+    const timer = setTimeout(() => {
+      setAlertVisible(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
   };
 
   useEffect(() => {
@@ -24,9 +26,10 @@ const Timer: React.FC = () => {
       const id = setInterval(() => {
         setSeconds(prevSeconds => {
           const newSeconds = prevSeconds + 1;
-          if (newSeconds % 30 === 0 && isNotifi) {
+          if (newSeconds % 300 === 0 && isNotifi) {
             console.log(`Прошло ${newSeconds / 60} минут`);
             let res = newSeconds / 60;
+            console.log('open Alert');
             createAlert(res);
           }
           return newSeconds;
@@ -75,8 +78,12 @@ const Timer: React.FC = () => {
 
   return (
     <View style={styles.container}>
+       <CustomAlert
+          visible={alertVisible}
+          message={`Прошло ${resState} минут`}
+          onClose={() => setAlertVisible(false)}
+        />
       <Text style={styles.timerText}>{formatTime(seconds)}</Text>
-
       <View style={styles.controlContainer}>
         <TouchableOpacity
           style={styles.button}
@@ -107,6 +114,9 @@ const Timer: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+
+  },
   container: {
     alignItems: 'center',
     justifyContent: 'center',
